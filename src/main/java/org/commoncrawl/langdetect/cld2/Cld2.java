@@ -16,6 +16,8 @@
 
 package org.commoncrawl.langdetect.cld2;
 
+import com.sun.jna.Platform;
+
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -55,7 +57,7 @@ public class Cld2 {
   /**
    * Convert bytes to native bytes (null-terminated char* array).
    * 
-   * @param bytes
+   * @param jbytes
    *          input bytes, not null-terminated
    * @return null-terminated bytes
    */
@@ -127,7 +129,8 @@ public class Cld2 {
   public static Result detect(byte[] bytes, CLDHints hints, int flags,
       boolean isPlainText) {
     Result res = new Result();
-    int language = Cld2Library.INSTANCE._ZN4CLD224ExtDetectLanguageSummaryEPKcibPKNS_8CLDHintsEiPNS_8LanguageEPiPdPSt6vectorINS_11ResultChunkESaISA_EES7_Pb(
+    int language = Platform.isMac() ?
+        Cld2Library.INSTANCE._ZN4CLD224ExtDetectLanguageSummaryEPKcibPKNS_8CLDHintsEiPNS_8LanguageEPiPdPNSt3__16vectorINS_11ResultChunkENS9_9allocatorISB_EEEES7_Pb(
         bytes,
         bytes.length,
         isPlainText,
@@ -138,7 +141,19 @@ public class Cld2 {
         res.normalizedScore3,
         null, // Supposed to be a vector of ResultChunks, but it is not direct to pass vectors.
         res.textBytes,
-        res.isReliable);
+        res.isReliable) :
+        Cld2Library.INSTANCE._ZN4CLD224ExtDetectLanguageSummaryEPKcibPKNS_8CLDHintsEiPNS_8LanguageEPiPdPSt6vectorINS_11ResultChunkESaISA_EES7_Pb(
+            bytes,
+            bytes.length,
+            isPlainText,
+            hints,
+            flags,
+            res.language3,
+            res.percent3,
+            res.normalizedScore3,
+            null, // Supposed to be a vector of ResultChunks, but it is not direct to pass vectors.
+            res.textBytes,
+            res.isReliable);
     res.setLanguage(language);
 
     return res;
